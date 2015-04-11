@@ -31,7 +31,12 @@ $RECYCLE.BIN/
 # Thumbnails
 ._*
 
-.class
+*.class
+
+target/*
+.settings/*
+.classpath
+*.project
 
 # Files that might appear on external disk
 .Spotlight-V100
