@@ -11,102 +11,108 @@ import com.wmenjoy.utils.lang.StringUtils;
 
 public abstract class FieldUtil {
 
-    /***
-     *
-     * @param field
-     * @return
-     */
-    public static boolean isArray(final Field field) {
-        return ClassUtil.isArray(field.getType());
-    }
+	/***
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public static boolean isArray(final Field field) {
+		return ClassUtil.isArray(field.getType());
+	}
 
-    public static boolean isList(final Field field) {
-        return ClassUtil.isList(field.getType());
-    }
+	public static boolean isList(final Field field) {
+		return ClassUtil.isList(field.getType());
+	}
 
-    public static boolean isSet(final Field field) {
-        return ClassUtil.isSet(field.getType());
-    }
+	public static boolean isSet(final Field field) {
+		return ClassUtil.isSet(field.getType());
+	}
 
-    public static boolean isListOrSet(final Field field) {
-        return isList(field) || isSet(field);
-    }
+	public static boolean isListOrSet(final Field field) {
+		return isList(field) || isSet(field);
+	}
 
-    public static boolean isCollection(final Field field) {
-        return ClassUtil.isCollection(field.getType());
-    }
+	public static boolean isCollection(final Field field) {
+		return ClassUtil.isCollection(field.getType());
+	}
 
-    public static boolean isNumber(final Field field) {
-        return ClassUtil.isNumber(field.getType());
-    }
+	public static boolean isNumber(final Field field) {
+		return ClassUtil.isNumber(field.getType());
+	}
 
-    public static boolean isFinal(final Field field) {
-        return Modifier.isFinal(field.getModifiers());
-    }
+	public static boolean isFinal(final Field field) {
+		return Modifier.isFinal(field.getModifiers());
+	}
 
-    public static boolean isStatic(final Field field) {
-        return Modifier.isStatic(field.getModifiers());
-    }
+	public static boolean isStatic(final Field field) {
+		return Modifier.isStatic(field.getModifiers());
+	}
 
-    public static boolean isStaticOrFinal(final Field field) {
-        return isFinal(field) || isStatic(field);
-    }
+	public static boolean isObjectField(final Field field) {
+		return !Modifier.isStatic(field.getModifiers())
+				&& !Modifier.isFinal(field.getModifiers())
+				&& !field.isSynthetic();
+	}
 
-    public static List<Field> getFields(final Class<?> clazz) {
+	public static boolean isObjectPublicField(final Field field) {
+		return Modifier.isPublic(field.getModifiers()) && isObjectField(field);
+	}
 
-        final List<Field> fieldList = new ArrayList<Field>();
+	public static List<Field> getFields(final Class<?> clazz) {
 
-        final Field[] fields = clazz.getDeclaredFields();
+		final List<Field> fieldList = new ArrayList<Field>();
 
-        for (final Field field : fields) {
-            if (isStaticOrFinal(field)) {
-                continue;
-            }
-            fieldList.add(field);
-        }
+		final Field[] fields = clazz.getDeclaredFields();
 
-        if (clazz.getSuperclass() != Object.class) {
-            fieldList.addAll(getFields(clazz.getSuperclass()));
-        }
+		for (final Field field : fields) {
+			if (isObjectField(field)) {
+				continue;
+			}
+			fieldList.add(field);
+		}
 
-        return fieldList;
-    }
+		if (clazz.getSuperclass() != Object.class) {
+			fieldList.addAll(getFields(clazz.getSuperclass()));
+		}
 
-    public static Class<?> getSubFieldClass(final Field field) {
-        if (field == null) {
-            throw new IllegalArgumentException("field 参数不能为空");
-        }
+		return fieldList;
+	}
 
-        if (isArray(field)) {
-            return field.getType().getComponentType();
-        } else if (isListOrSet(field)) {
-            final Type type = field.getGenericType();
-            final ParameterizedType pType = (ParameterizedType)type;
-            final Class<?> subClazz = (Class<?>)pType.getActualTypeArguments()[0];
-            return subClazz;
-        } else {
-            throw new IllegalArgumentException("不支持subField的类型");
-        }
+	public static Class<?> getSubFieldClass(final Field field) {
+		if (field == null) {
+			throw new IllegalArgumentException("field 参数不能为空");
+		}
 
-    }
+		if (isArray(field)) {
+			return field.getType().getComponentType();
+		} else if (isListOrSet(field)) {
+			final Type type = field.getGenericType();
+			final ParameterizedType pType = (ParameterizedType) type;
+			final Class<?> subClazz = (Class<?>) pType.getActualTypeArguments()[0];
+			return subClazz;
+		} else {
+			throw new IllegalArgumentException("不支持subField的类型");
+		}
 
-    public static Field getField(final Class<?> clazz, final String fieldName) throws NoSuchFieldException,
-            SecurityException {
+	}
 
-        if ((clazz == null) || StringUtils.isBlank(fieldName)) {
-            throw new IllegalArgumentException("fieldName 或者clazz参数不能为空");
-        }
+	public static Field getField(final Class<?> clazz, final String fieldName)
+			throws NoSuchFieldException, SecurityException {
 
-        try {
-            final Field field = clazz.getDeclaredField(fieldName);
+		if ((clazz == null) || StringUtils.isBlank(fieldName)) {
+			throw new IllegalArgumentException("fieldName 或者clazz参数不能为空");
+		}
 
-            return field;
-        } catch (final NoSuchFieldException e) {
-            if (clazz.getSuperclass() != Object.class) {
-                return getField(clazz.getSuperclass(), fieldName);
-            }
-            throw e;
-        }
-    }
+		try {
+			final Field field = clazz.getDeclaredField(fieldName);
+
+			return field;
+		} catch (final NoSuchFieldException e) {
+			if (clazz.getSuperclass() != Object.class) {
+				return getField(clazz.getSuperclass(), fieldName);
+			}
+			throw e;
+		}
+	}
 
 }

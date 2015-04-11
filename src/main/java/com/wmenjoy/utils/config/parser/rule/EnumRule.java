@@ -14,7 +14,7 @@ public class EnumRule<T extends Enum<T>> extends BaseFieldRule<T> {
 	final Type type;
 	final Class<T> clazz;
 	final boolean nullable;
-	Map<String, T> enumMap;
+	final Map<String, T> enumMap;
 
 	public static <T extends Enum<T>> EnumRule<T> getEnumRule(final Type type,
 			final Class<T> clazz, final boolean nullable)
@@ -41,7 +41,7 @@ public class EnumRule<T extends Enum<T>> extends BaseFieldRule<T> {
 		final T[] enums = clazz.getEnumConstants();
 
 		for (final T t : enums) {
-			final Enum enumValue = t;
+			final Enum<T> enumValue = t;
 
 			if (type == Type.STRING) {
 				final String name = enumValue.name();
