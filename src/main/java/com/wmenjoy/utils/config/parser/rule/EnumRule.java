@@ -9,14 +9,14 @@ import com.wmenjoy.utils.config.parser.SystemConfigErrorException;
 import com.wmenjoy.utils.config.parser.annotation.MEnum.Type;
 import com.wmenjoy.utils.lang.StringUtils;
 
-public class EnumRule<T> extends BaseFieldRule<T> {
+public class EnumRule<T extends Enum<T>> extends BaseFieldRule<T> {
 
 	final Type type;
 	final Class<T> clazz;
 	final boolean nullable;
 	Map<String, T> enumMap;
 
-	public static <T> EnumRule<T> getEnumRule(final Type type,
+	public static <T extends Enum<T>> EnumRule<T> getEnumRule(final Type type,
 			final Class<T> clazz, final boolean nullable)
 			throws SystemConfigErrorException {
 		return new EnumRule<T>(type, clazz, nullable);
@@ -41,7 +41,7 @@ public class EnumRule<T> extends BaseFieldRule<T> {
 		final T[] enums = clazz.getEnumConstants();
 
 		for (final T t : enums) {
-			final Enum enumValue = (Enum) t;
+			final Enum enumValue = t;
 
 			if (type == Type.STRING) {
 				final String name = enumValue.name();
