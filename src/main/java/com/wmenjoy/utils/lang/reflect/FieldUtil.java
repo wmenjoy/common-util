@@ -5,7 +5,9 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.wmenjoy.utils.lang.StringUtils;
 
@@ -115,4 +117,22 @@ public abstract class FieldUtil {
 		}
 	}
 
+	public static Map<String, Field> getBeanPropertyFields(Class<?> cl) {
+		final Map<String, Field> properties = new HashMap<String, Field>();
+		for (; cl != null; cl = cl.getSuperclass()) {
+			final Field[] fields = cl.getDeclaredFields();
+			for (final Field field : fields) {
+				if (Modifier.isTransient(field.getModifiers())
+						|| Modifier.isStatic(field.getModifiers())) {
+					continue;
+				}
+
+				field.setAccessible(true);
+
+				properties.put(field.getName(), field);
+			}
+		}
+
+		return properties;
+	}
 }
