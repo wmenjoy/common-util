@@ -20,6 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class ClassUtil {
 
@@ -638,25 +642,26 @@ public abstract class ClassUtil {
 	 *            name.
 	 * @return desc.
 	 */
-	public static String name2desc(String name) {
+	public static String name2desc(final String name) {
 		final StringBuilder sb = new StringBuilder();
+		String realName = name;
 		int c = 0;
-		final int index = name.indexOf('[');
+		final int index = realName.indexOf('[');
 		if (index > 0) {
-			c = (name.length() - index) / 2;
-			name = name.substring(0, index);
+			c = (realName.length() - index) / 2;
+			realName = realName.substring(0, index);
 		}
 		while (c-- > 0) {
 			sb.append("[");
 		}
 
-		final Class<?> primitiveType = "void".equals(name) ? void.class
-				: primitiveTypeNameMap.get(name);
+		final Class<?> primitiveType = "void".equals(realName) ? void.class
+				: primitiveTypeNameMap.get(realName);
 
 		if (primitiveType != null) {
 			sb.append(primitiveTypeJVMExprMap.get(primitiveType));
 		} else {
-			sb.append('L').append(name.replace('.', '/')).append(';');
+			sb.append('L').append(realName.replace('.', '/')).append(';');
 		}
 		return sb.toString();
 	}
@@ -668,20 +673,52 @@ public abstract class ClassUtil {
 	 *            class.
 	 * @return name.
 	 */
-	public static String getName(Class<?> c) {
-		if (c.isArray()) {
+	public static String getName(final Class<?> c) {
+		Class<?> realClass = c;
+		if (realClass.isArray()) {
 			final StringBuilder sb = new StringBuilder();
 			do {
 				sb.append("[]");
-				c = c.getComponentType();
-			} while (c.isArray());
+				realClass = realClass.getComponentType();
+			} while (realClass.isArray());
 
-			return c.getName() + sb.toString();
+			return realClass.getName() + sb.toString();
 		}
-		return c.getName();
+		return realClass.getName();
+	}
+
+	/**
+	 * desc to name. "[[I" => "int[][]"
+	 * 
+	 * @param desc
+	 *            desc.
+	 * @return name.
+	 */
+	public static String desc2name(final String desc) {
+		final StringBuilder sb = new StringBuilder();
+		int c = desc.lastIndexOf('[') + 1;
+		if (desc.length() == c + 1) {
+			final Class<?> clazz = JVMExprToPrimitiveTypeMap
+					.get(desc.charAt(c));
+
+			if (clazz != null) {
+				sb.append(clazz.getName());
+			} else {
+				throw new RuntimeException();
+			}
+
+		} else {
+			sb.append(desc.substring(c + 1, desc.length() - 1)
+					.replace('/', '.'));
+		}
+		while (c-- > 0) {
+			sb.append("[]");
+		}
+		return sb.toString();
 	}
 
 	private final static Map<Class<?>, Character> primitiveTypeJVMExprMap = new HashMap<Class<?>, Character>();
+	private final static Map<Character, Class<?>> JVMExprToPrimitiveTypeMap = new HashMap<Character, Class<?>>();
 
 	static {
 		primitiveTypeJVMExprMap.put(void.class, 'V');
@@ -693,7 +730,203 @@ public abstract class ClassUtil {
 		primitiveTypeJVMExprMap.put(float.class, 'F');
 		primitiveTypeJVMExprMap.put(short.class, 'S');
 		primitiveTypeJVMExprMap.put(long.class, 'L');
+		JVMExprToPrimitiveTypeMap.put('V', void.class);
+		JVMExprToPrimitiveTypeMap.put('I', int.class);
+		JVMExprToPrimitiveTypeMap.put('Z', boolean.class);
+		JVMExprToPrimitiveTypeMap.put('B', byte.class);
+		JVMExprToPrimitiveTypeMap.put('C', char.class);
+		JVMExprToPrimitiveTypeMap.put('D', double.class);
+		JVMExprToPrimitiveTypeMap.put('F', float.class);
+		JVMExprToPrimitiveTypeMap.put('S', short.class);
+		JVMExprToPrimitiveTypeMap.put('L', long.class);
 
 	}
 
+	/**
+	 * name to class. "boolean" => boolean.class "java.util.Map[][]" =>
+	 * java.util.Map[][].class
+	 * 
+	 * @param name
+	 *            name.
+	 * @return Class instance.
+	 */
+	public static Class<?> name2class(final String name)
+			throws ClassNotFoundException {
+		return name2class(ClassUtil.getClassLoader(), name);
+	}
+
+	/**
+	 * name to class. "boolean" => boolean.class "java.util.Map[][]" =>
+	 * java.util.Map[][].class
+	 * 
+	 * @param cl
+	 *            ClassLoader instance.
+	 * @param name
+	 *            name.
+	 * @return Class instance.
+	 */
+	private static Class<?> name2class(final ClassLoader cl, final String name)
+			throws ClassNotFoundException {
+		int c = 0;
+
+		String realName = name;
+		final int index = name.indexOf('[');
+		if (index > 0) {
+			c = (name.length() - index) / 2;
+			realName = name.substring(0, index);
+		}
+		if (c > 0) {
+			final StringBuilder sb = new StringBuilder();
+			while (c-- > 0) {
+				sb.append("[");
+			}
+			final Class<?> primitiveType = "void".equals(realName) ? void.class
+					: primitiveTypeNameMap.get(realName);
+			if (primitiveType != null) {
+				sb.append(primitiveTypeJVMExprMap.get(primitiveType));
+			} else {
+				sb.append('L').append(realName).append(';'); // "java.lang.Object"
+																// ==>
+																// "Ljava.lang.Object;"
+			}
+			realName = sb.toString();
+		} else {
+			return "void".equals(realName) ? void.class : primitiveTypeNameMap
+					.get(realName);
+
+		}
+
+		ClassLoader realClassLoader = cl;
+		if (realClassLoader == null) {
+			realClassLoader = ClassUtil.getClassLoader();
+		}
+		Class<?> clazz = NAME_CLASS_CACHE.get(realName);
+		if (clazz == null) {
+			clazz = Class.forName(realName, true, realClassLoader);
+			NAME_CLASS_CACHE.put(realName, clazz);
+		}
+		return clazz;
+	}
+
+	private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
+
+	/**
+	 * desc to class. "[Z" => boolean[].class "[[Ljava/util/Map;" =>
+	 * java.util.Map[][].class
+	 * 
+	 * @param desc
+	 *            desc.
+	 * @return Class instance.
+	 * @throws ClassNotFoundException
+	 */
+	public static Class<?> desc2class(final String desc)
+			throws ClassNotFoundException {
+		return desc2class(ClassUtil.getClassLoader(), desc);
+	}
+
+	/**
+	 * desc to class. "[Z" => boolean[].class "[[Ljava/util/Map;" =>
+	 * java.util.Map[][].class
+	 * 
+	 * @param cl
+	 *            ClassLoader instance.
+	 * @param desc
+	 *            desc.
+	 * @return Class instance.
+	 * @throws ClassNotFoundException
+	 */
+	private static Class<?> desc2class(ClassLoader cl, String desc)
+			throws ClassNotFoundException {
+		final Class<?> primitiveType = JVMExprToPrimitiveTypeMap.get(desc
+				.charAt(0));
+		if (primitiveType != null) {
+			return primitiveType;
+		}
+
+		if ('L' == desc.charAt(0)) {
+			desc = desc.substring(1, desc.length() - 1).replace('/', '.');
+		} else if ('[' == desc.charAt(0)) {
+			desc = desc.replace('/', '.'); // "[[Ljava/lang/Object;" ==>
+			// "[[Ljava.lang.Object;"
+
+		} else {
+			throw new ClassNotFoundException("Class not found: " + desc);
+		}
+
+		if (cl == null) {
+			cl = ClassUtil.getClassLoader();
+		}
+		Class<?> clazz = DESC_CLASS_CACHE.get(desc);
+		if (clazz == null) {
+			clazz = Class.forName(desc, true, cl);
+			DESC_CLASS_CACHE.put(desc, clazz);
+		}
+		return clazz;
+	}
+
+	private static final ConcurrentMap<String, Class<?>> DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
+
+	/**
+	 * get class array instance.
+	 * 
+	 * @param desc
+	 *            desc.
+	 * @return Class class array.
+	 * @throws ClassNotFoundException
+	 */
+
+	/**
+	 * get class array instance.
+	 * 
+	 * @param desc
+	 *            desc.
+	 * @return Class class array.
+	 * @throws ClassNotFoundException
+	 */
+	public static Class<?>[] desc2classArray(final String desc)
+			throws ClassNotFoundException {
+		final Class<?>[] ret = desc2classArray(ClassUtil.getClassLoader(), desc);
+		return ret;
+	}
+
+	/**
+	 * get class array instance.
+	 * 
+	 * @param cl
+	 *            ClassLoader instance.
+	 * @param desc
+	 *            desc.
+	 * @return Class[] class array.
+	 * @throws ClassNotFoundException
+	 */
+	private static Class<?>[] desc2classArray(final ClassLoader cl,
+			final String desc) throws ClassNotFoundException {
+		if (desc.length() == 0) {
+			return EMPTY_CLASS_ARRAY;
+		}
+
+		final List<Class<?>> cs = new ArrayList<Class<?>>();
+		final Matcher m = DESC_PATTERN.matcher(desc);
+		while (m.find()) {
+			cs.add(desc2class(cl, m.group()));
+		}
+		return cs.toArray(EMPTY_CLASS_ARRAY);
+	}
+
+	public static final String JAVA_IDENT_REGEX = "(?:[_$a-zA-Z][_$a-zA-Z0-9]*)";
+
+	public static final String JAVA_NAME_REGEX = "(?:" + JAVA_IDENT_REGEX
+			+ "(?:\\." + JAVA_IDENT_REGEX + ")*)";
+
+	public static final String CLASS_DESC = "(?:L" + JAVA_IDENT_REGEX
+			+ "(?:\\/" + JAVA_IDENT_REGEX + ")*;)";
+
+	public static final String ARRAY_DESC = "(?:\\[+(?:(?:[VZBCDFIJS])|"
+			+ CLASS_DESC + "))";
+
+	public static final String DESC_REGEX = "(?:(?:[VZBCDFIJS])|" + CLASS_DESC
+			+ "|" + ARRAY_DESC + ")";
+
+	public static final Pattern DESC_PATTERN = Pattern.compile(DESC_REGEX);
+	private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 }
