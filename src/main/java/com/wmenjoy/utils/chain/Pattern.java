@@ -11,7 +11,7 @@ import com.wmenjoy.utils.lang.StringParser;
  */
 public class Pattern {
 
-    String chainEx = "!node1,(!node2,node3)?(1:node5,2:node6,3:node7), node1&node2, node1|node2";
+    String chainEx = "!node1,(!node2,node3)?｛1:node5,2:node6,3:node7｝, node1&node2, node1|node2";
 
     //理想结果   NorNode, GroupNode (NorNode, nornode), conditionNode Map<1, node1>,  orNode, | node2
 
