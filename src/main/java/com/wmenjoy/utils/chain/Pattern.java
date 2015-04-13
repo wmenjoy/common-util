@@ -11,7 +11,7 @@ import com.wmenjoy.utils.lang.StringParser;
  */
 public class Pattern {
 
-    String chainEx = "!node1,(!node2,node3)?｛1:node5,2:node6,3:node7｝, node1&node2, node1|node2";
+       String chainEx = "!node1,(!node2,node3)?(1:node5,2:node6,3:node7), node1&node2, node1|node2";
 
     //理想结果   NorNode, GroupNode (NorNode, nornode), conditionNode Map<1, node1>,  orNode, | node2
 
@@ -21,83 +21,48 @@ public class Pattern {
      * The starting point of state machine for the find operation. This allows a
      * match to start anywhere in the input.
      */
-    transient Node root;
+    transient Node<?, ?> root;
 
     public void compile(final String chainExpr) {
 
         this.parser = new StringParser(chainExpr);
         for (;;) {
-            final Node node = this.sequence(null);
+            final Node<?, ?> node = this.sequence(null);
         }
     }
 
     /**
      * Parsing of sequences between alternations.
      */
-    private Node sequence(final Node end) {
-        Node head = null;
-        Node tail = null;
+    private Node<?, ?> sequence(final Node<?, ?> end) {
+        Node<?, ?> head = null;
+        Node<?, ?> tail = null;
         Node node = null;
         this.root = null;
-        boolean dealWithGroup = false;
-        final boolean dealWithCondition = false;
-        final boolean dealWithAnd = false;
+
+        boolean noMode = false;
+
         LOOP: for (;;) {
             final int ch = this.parser.peek();
             switch (ch) {
             case '(':
                 // Because group handles its own closure,
                 // we need to treat it differently
-                this.parser.next();
-                dealWithGroup = true;
-                node = this.sequence(end);
+                node = this.dealWithGroup(end);
+
                 // Check for comment or flag group
 
                 //处理掉）
                 break;
             case ')':
-
-                if (!dealWithGroup) {
-                    //出问题
-                    return null;
-                }
-
-                if (node != null) {
-                    node = new GroupNode(node);
-                    if (node == null) {
-                        break;
-                    }
-                    if (head == null) {
-                        head = node;
-                    } else {
-                        tail.next = node;
-                    }
-                    // Double return: Tail was returned in root
-                    tail = this.root;
-                }
-                break;
-
+                //异常， 多余的)
             case '!':
-                this.parser.next();
-                tail = this.root;
-                final Node subNode = this.sequence(tail);
-                if (node == null) {
-                    break;
-                }
-                if (head == null) {
-                    head = node;
-                } else {
-                    tail.next = node;
-                }
-                // Double return: Tail was returned in root
-                tail = this.root;
+                noMode = !noMode;
                 //处理非node
                 break;
             // Fall through
             case '?':
-                //如果node不等与null
-                this.parser.next();
-                tail = this.root;
+                //处理条件选择
                 node = this.dealWithConditionNode(tail);
             case ',':
                 //读取一个node结束
@@ -143,29 +108,189 @@ public class Pattern {
         return head;
     }
 
-    private Node dealWithConditionNode(final Node end) {
-        final Node con1Node = this.sequence(end);
-        Node con2Node = null;
-        final int ch = this.parser.peek();
-        if (':' == ch) {
+    private Node dealWithGroup(final Node<?, ?> end) {
+        this.root = null;
+        //skip （
+        final int ch = this.parser.next();
+
+        final Node node = this.sequence(end);
+
+        if (')' == this.parser.peek()) {
             this.parser.next();
-            con2Node = this.sequence(end);
+            return node;
         } else {
-            //抛异常
+            //语法错误
         }
 
-        return new ConditionNode(con1Node, con2Node);
+        return node;
 
+    }
+
+    /***
+     *
+     *
+     * Node1,!Node,!(GroupNode, Node2,Node3),Node3
+     *
+     * Node = !()
+     *
+     *
+     * !!!! ,, (, ), !, ?, &, |,
+     *
+     *
+     * !: 开启否定模式
+     *
+     * , oneNode End ( groupNode ) --- ? 条件Node开启
+     *
+     * &：并且条件开启 |：或条件开启
+     *
+     *
+     *
+     *
+     *
+     */
+
+    /**
+     *
+     * @param end
+     * @return
+     */
+    private Node dealWithConditionNode(final Node end) {
+        this.root = null;
+        this.parser.next();
+        int ch = this.parser.peek();
+        boolean multiCondition = false;
+
+        if ('{' == ch) {
+            multiCondition = true;
+        }
+
+        if (multiCondition == false) {
+            final Node firstNode = this.sequence(end);
+            Node secondNode = null;
+            ch = this.parser.peek();
+            if (':' == ch) {
+                secondNode = this.sequence(end);
+            }
+            return new ConditionNode(firstNode, secondNode);
+        }
+
+        int number = 0;
+        boolean numberStart = false;
+
+        final Map<Integer, Node> multiConditionNodeMap = new HashMap<Integer, Node>();
+        LOOP: for (; '}' != ch;) {
+            ch = this.parser.peek();
+            switch (ch) {
+            case '{':
+                break;
+            case ':':
+                numberStart = false;
+                final Node oneNode = this.sequence(end);
+                multiConditionNodeMap.put(number, oneNode);
+                break;
+            case ',':
+                //不作处理
+                break;
+            case '}':
+                this.parser.peek();
+                return new MultiConditionNode(multiConditionNodeMap);
+                //整个ConditionNode结束
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                if (numberStart) {
+                    numberStart = true;
+                    number = (number * 10) + (ch - '0');
+                } else {
+                    number = ch - '0';
+                }
+
+            case 0:
+                //处理到行尾
+                if (this.parser.readFinished()) {
+                    break LOOP;
+                }
+
+                //Failed
+
+            default:
+
+                break;
+            }
+
+            this.parser.next();
+        }
+
+        /**
+         * 结构异常
+         */
+        return null;
     }
 
     String supported_character = "0123456789abcdefghigklmnopqrstuvwxyzABCDEFGHIGKLMNOPQRSTUVWXYZ_";
 
     private Node atom() {
         int first = 0;
-        final int prev = -1;
-        final boolean hasSupplementary = false;
         int ch = this.parser.peek();
-        final IntAppender appender = new IntAppender();
+        final StringBuilder charAppend = new StringBuilder();
+        LOOP: for (;;) {
+            switch (ch) {
+            case '?':
+            case ':':
+            case ')':
+            case '&':
+            case '|':
+                if (first > 1) {
+                    first--;
+                }
+                this.parser.unread();
+                break LOOP;
+            case ',':
+                if (first > 1) {
+                    first--;
+                }
+                this.parser.next();
+                //真个字符读取完成了
+                break LOOP;
+            case 0:
+                if (this.parser.readFinished()) {
+                    break LOOP;
+                }
+                // Fall through
+            default:
+                //首字母必须为字符--， 是否需要考虑
+                //                    if(first == 0 && !isNodeNameBeginCharacter(ch)){
+                //                        break;
+                //                    }
+                charAppend.append((char)ch);
+                first++;
+                ch = this.parser.next();
+                continue;
+            }
+
+        }
+
+        if (first == 0) {
+            //抛异常
+        }
+
+        return new SliceNode(charAppend.toString());
+    }
+
+    public static void main(final String[] args) {
+        final String pattern = "sfsfsf:";
+        final StringParser parser = new StringParser(pattern);
+
+        int first = 0;
+        int ch = parser.peek();
+        final StringBuilder charAppend = new StringBuilder();
         for (;;) {
             switch (ch) {
             case '?':
@@ -176,7 +301,7 @@ public class Pattern {
                 if (first > 1) {
                     first--;
                 }
-                this.parser.unread();
+                parser.unread();
                 break;
             case ',':
                 if (first > 1) {
@@ -185,7 +310,7 @@ public class Pattern {
                 //真个字符读取完成了
                 break;
             case 0:
-                if (this.parser.readFinished()) {
+                if (parser.readFinished()) {
                     break;
                 }
                 // Fall through
@@ -194,19 +319,17 @@ public class Pattern {
                 //                    if(first == 0 && !isNodeNameBeginCharacter(ch)){
                 //                        break;
                 //                    }
-                appender.append(ch, first);
+                charAppend.append((char)ch);
                 first++;
-                ch = this.parser.next();
+                ch = parser.next();
                 continue;
             }
             break;
         }
 
+        System.out.println(charAppend.toString());
         if (first == 0) {
             //抛异常
         }
-
-        return new SliceNode(appender.getBuffer());
     }
-
 }
