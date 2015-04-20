@@ -2,14 +2,21 @@ package com.wmenjoy.utils.chain;
 
 public class SliceNode extends Node{
 
-    public SliceNode(int[] buffer) {
-        // TODO Auto-generated constructor stub
+        private String name;
+
+    public SliceNode(final String sliceName) {
+        this.name = sliceName;
     }
 
     @Override
-    protected int handle(Object reqParam, Object result) {
+    protected int handle(final Object reqParam, final Object result) {
         // TODO Auto-generated method stub
         return 0;
     }
+
+    public String getName() {
+        return this.name;
+    }
+
 
 }
