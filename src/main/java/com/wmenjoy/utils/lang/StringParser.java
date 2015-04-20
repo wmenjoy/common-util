@@ -237,5 +237,65 @@ public class StringParser {
 
         return this.cursor >= this.strLength;
     }
+    
+    public String readStr(final Set<Character> endCharSet) {
+
+        if (endCharSet == null) {
+            throw new NullPointerException("endCharSet 不能为空");
+        }
+
+        final StringBuilder sb = new StringBuilder(16);
+        for (; (this.cursor < this.temp.length) && (this.temp[this.cursor] != 0);) {
+            final char ch = (char)this.temp[this.cursor];
+            if (!endCharSet.contains(ch)) {
+                sb.append(ch);
+                this.cursor++;
+            } else {
+                break;
+            }
+        }
+
+        return sb.toString();
+
+    }
+
+    /**
+     * 读取一个整形值 cursor指向下一个字符
+     * 
+     * @param endCharSet
+     * @return
+     */
+    public int readInt(final Set<Character> endCharSet) {
+
+        if (endCharSet == null) {
+            throw new NullPointerException("endCharSet 不能为空");
+        }
+
+        int number = 0;
+
+        while (!this.readFinished() && (this.peek() != 0) && ASCII.isSpace(this.peek())) {
+            this.next();
+        }
+
+        if (!ASCII.isDigit(this.peek())) {
+            throw new NumberFormatException("不是个数字");
+        }
+
+        for (; !this.readFinished() && (this.peek() != 0) && !ASCII.isSpace(this.peek());) {
+            final char ch = (char)this.temp[this.cursor];
+            if (endCharSet.contains(ch)) {
+                break;
+            }
+            number = (number * 10) + (ch - '0');
+            this.cursor++;
+        }
+
+        while (!this.readFinished() && (this.peek() != 0) && ASCII.isSpace(this.peek())) {
+            this.next();
+        }
+
+        return number;
+
+    }
 
 }
