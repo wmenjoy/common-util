@@ -1,5 +1,7 @@
 package com.wmenjoy.utils.lang;
 
+import java.util.Set;
+
 public class StringParser {
     /**
      * Temporary null terminated code point array used by pattern compiling.
@@ -43,7 +45,7 @@ public class StringParser {
     }
 
     /***
-     * 设置
+     * 璁剧疆
      *
      * @param flag
      * @return
@@ -54,7 +56,7 @@ public class StringParser {
     }
 
     /**
-     * 测试是否匹配预定的字符
+     * 娴嬭瘯鏄惁鍖归厤棰勫畾鐨勫瓧绗�
      */
     public boolean accept(final int ch, final String s) {
         int testChar = this.temp[this.cursor++];
@@ -241,7 +243,7 @@ public class StringParser {
     public String readStr(final Set<Character> endCharSet) {
 
         if (endCharSet == null) {
-            throw new NullPointerException("endCharSet 不能为空");
+            throw new NullPointerException("endCharSet 涓嶈兘涓虹┖");
         }
 
         final StringBuilder sb = new StringBuilder(16);
@@ -260,7 +262,7 @@ public class StringParser {
     }
 
     /**
-     * 读取一个整形值 cursor指向下一个字符
+     * 璇诲彇涓�涓暣褰㈠�� cursor鎸囧悜涓嬩竴涓瓧绗�
      * 
      * @param endCharSet
      * @return
@@ -268,7 +270,7 @@ public class StringParser {
     public int readInt(final Set<Character> endCharSet) {
 
         if (endCharSet == null) {
-            throw new NullPointerException("endCharSet 不能为空");
+            throw new NullPointerException("endCharSet 涓嶈兘涓虹┖");
         }
 
         int number = 0;
@@ -278,7 +280,7 @@ public class StringParser {
         }
 
         if (!ASCII.isDigit(this.peek())) {
-            throw new NumberFormatException("不是个数字");
+            throw new NumberFormatException("涓嶆槸涓暟瀛�");
         }
 
         for (; !this.readFinished() && (this.peek() != 0) && !ASCII.isSpace(this.peek());) {

@@ -5,8 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.qunar.mobile.utils.lang.ASCII;
-import com.qunar.mobile.utils.lang.StringParser;
+import com.wmenjoy.utils.lang.ASCII;
+import com.wmenjoy.utils.lang.StringParser;
+
 
 /**
  * 解析
