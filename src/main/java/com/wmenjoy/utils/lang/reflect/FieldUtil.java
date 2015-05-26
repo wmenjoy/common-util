@@ -67,7 +67,7 @@ public abstract class FieldUtil {
 		final Field[] fields = clazz.getDeclaredFields();
 
 		for (final Field field : fields) {
-			if (isObjectField(field)) {
+			if (!isObjectField(field)) {
 				continue;
 			}
 			fieldList.add(field);
