@@ -1,16 +1,17 @@
 package com.wmenjoy.utils.chain;
 
-public abstract class Node<RequestT, ResponseT> {
-   
-    Node<?, ?> next;
+public abstract class Node {
 
-    public Node<?, ?> getNext() {
-        return this.next;
-    }
+	Node next;
 
-    public void setNext(final Node<RequestT, ResponseT> next) {
-        this.next = next;
-    }
+	public Node getNext() {
+		return this.next;
+	}
 
-    protected abstract int handle(RequestT reqParam, ResponseT result);
+	public void setNext(final Node next) {
+		this.next = next;
+	}
+
+	protected abstract int handle(BaseContextParam contextParam);
+
 }

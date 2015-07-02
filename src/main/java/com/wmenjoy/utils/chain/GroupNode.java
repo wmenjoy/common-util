@@ -1,15 +1,15 @@
 package com.wmenjoy.utils.chain;
 
-public class GroupNode<RequestT, ResponseT> extends Node<RequestT, ResponseT>{
+public class GroupNode extends Node {
 
-    public GroupNode(Node node) {
-        // TODO Auto-generated constructor stub
-    }
+	public GroupNode(final Node node) {
+		// TODO Auto-generated constructor stub
+	}
 
-    @Override
-    protected int handle(RequestT reqParam, ResponseT result) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
+	@Override
+	protected int handle(final BaseContextParam contextParam) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
 }

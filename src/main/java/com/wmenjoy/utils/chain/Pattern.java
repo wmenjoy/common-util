@@ -27,12 +27,12 @@ public class Pattern {
      * The starting point of state machine for the find operation. This allows a
      * match to start anywhere in the input.
      */
-    transient Node<?, ?> root;
+    transient Node root;
 
     public void compile(final String chainExpr) {
 
         this.parser = new StringParser(chainExpr);
-        final Node<?, ?> node = this.sequence(null);
+        final Node node = this.sequence(null);
     }
 
     /***
@@ -43,8 +43,8 @@ public class Pattern {
      * @param end
      * @return
      */
-    private Node<?, ?> singleNode(final Node<?, ?> end) {
-        Node<?, ?> node = null;
+    private Node singleNode(final Node end) {
+        Node node = null;
         boolean noMode = false;
         LOOP: for (;;) {
             final int ch = this.parser.peek();
@@ -100,9 +100,9 @@ public class Pattern {
     /**
      * Parsing of sequences between alternations.
      */
-    private Node<?, ?> sequence(final Node<?, ?> end) {
-        Node<?, ?> head = null;
-        Node<?, ?> tail = null;
+    private Node sequence(final Node end) {
+        Node head = null;
+        Node tail = null;
         Node node = null;
         this.root = null;
         Node next = null;
@@ -187,7 +187,7 @@ public class Pattern {
         return head;
     }
 
-    private Node dealWithGroup(final Node<?, ?> end) {
+    private Node dealWithGroup(final Node end) {
         this.root = null;
         //skip （
         final int ch = this.parser.next();
@@ -320,7 +320,7 @@ public class Pattern {
 
     static Set<Character> nodeStrEndCharSet = newHashSet('?', ')', '&', '|', ',', '}');
 
-    private Node<?, ?> atom() {
+    private Node atom() {
         //处理，具体task实例化的过程，待定
         return new SliceNode(this.parser.readStr(nodeStrEndCharSet));
     }
