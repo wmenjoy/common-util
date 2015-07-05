@@ -1,5 +1,8 @@
 package com.wmenjoy.utils.chain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 处理同时处理多个Node
  *
@@ -8,10 +11,19 @@ package com.wmenjoy.utils.chain;
  */
 public class OrNode extends Node {
 
+	
+	List<Node> nodeList;
+
+	
 	public OrNode(final Node node, final Node next) {
-		// TODO Auto-generated constructor stub
+		this.nodeList = new ArrayList<Node>();
+		this.nodeList.add(node);
+		this.nodeList.add(next);
 	}
 
+	/***
+	 * 使用线程池，处理
+	 */
 	@Override
 	protected int handle(final BaseContextParam contextParam) {
 		// TODO Auto-generated method stub
@@ -19,8 +31,7 @@ public class OrNode extends Node {
 	}
 
 	public void appendNode(final Node next) {
-		// TODO Auto-generated method stub
-
+		this.nodeList.add(next);
 	}
 
 }

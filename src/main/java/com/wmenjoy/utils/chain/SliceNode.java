@@ -1,14 +1,13 @@
 package com.wmenjoy.utils.chain;
 
-public class SliceNode extends Node {
+public class SliceNode extends WorkNode {
 
-	public SliceNode(final String StringStr) {
-		// TODO Auto-generated constructor stub
+	protected SliceNode(String handlerName) {
+		super(handlerName);
 	}
 
 	@Override
-	protected int handle(final BaseContextParam contextParam) {
-		// TODO Auto-generated method stub
+	protected int process(final BaseContextParam contextParam) {
 		return 0;
 	}
 

@@ -3,15 +3,31 @@ package com.wmenjoy.utils.chain;
 import java.util.Map;
 
 public class MultiConditionNode extends Node {
-
-	public MultiConditionNode(final Map<Integer, Node> multiConditionNodeMap) {
-		// TODO Auto-generated constructor stub
+	private Node conditionNode;
+	private Map<Integer, Node> multiConditionNodeMap;
+	public MultiConditionNode(final Node conditionNode, final Map<Integer, Node> multiConditionNodeMap
+			, Node defaultNode) {
+		if(multiConditionNodeMap == null || multiConditionNodeMap.size() == 0){
+			throw new IllegalArgumentException("multiConditionNodeMap 不能为空");
+		}
+		
+		this.multiConditionNodeMap = multiConditionNodeMap;
 	}
 
 	@Override
 	protected int handle(final BaseContextParam contextParam) {
-		// TODO Auto-generated method stub
-		return 0;
+		if(multiConditionNodeMap == null){
+			
+		}
+		
+		int result = this.conditionNode.handle(contextParam);
+		Node node = this.multiConditionNodeMap.get(result);
+		
+		if(node == null){
+			throw new IllegalArgumentException("unkown result");
+		}
+		
+		return node.handle(contextParam);
 	}
 
 }

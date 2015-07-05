@@ -240,52 +240,68 @@ public class StringParser {
         return this.cursor >= this.strLength;
     }
     
-    public String readStr(final Set<Character> endCharSet) {
+    public String readStr(final Set<Character> supportedChar) {
 
-        if (endCharSet == null) {
-            throw new NullPointerException("endCharSet 涓嶈兘涓虹┖");
+        if (supportedChar == null) {
+            throw new NullPointerException("endCharSet 为空");
+        }
+        
+        while (!this.readFinished() && (this.peek() != 0) && ASCII.isSpace(this.peek())) {
+            this.next();
         }
 
         final StringBuilder sb = new StringBuilder(16);
         for (; (this.cursor < this.temp.length) && (this.temp[this.cursor] != 0);) {
             final char ch = (char)this.temp[this.cursor];
-            if (!endCharSet.contains(ch)) {
+            if (supportedChar.contains(ch)) {
                 sb.append(ch);
                 this.cursor++;
             } else {
                 break;
             }
         }
-
+        
+        while (!this.readFinished() && (this.peek() != 0) && ASCII.isSpace(this.peek())) {
+            this.next();
+        }
         return sb.toString();
 
     }
 
+    
     /**
-     * 璇诲彇涓�涓暣褰㈠�� cursor鎸囧悜涓嬩竴涓瓧绗�
+     * 读取
      * 
-     * @param endCharSet
+     * @param supported
      * @return
      */
-    public int readInt(final Set<Character> endCharSet) {
-
-        if (endCharSet == null) {
-            throw new NullPointerException("endCharSet 涓嶈兘涓虹┖");
-        }
+    public int readInt() {
 
         int number = 0;
 
         while (!this.readFinished() && (this.peek() != 0) && ASCII.isSpace(this.peek())) {
             this.next();
         }
+        
 
-        if (!ASCII.isDigit(this.peek())) {
-            throw new NumberFormatException("涓嶆槸涓暟瀛�");
+
+        if('+' == this.peek()){
+        	this.next();
         }
-
+        boolean isNegative = false;
+        if('-' == this.peek()){
+        	isNegative = true;
+        }
+        
+        if (!ASCII.isDigit(this.peek())) {
+            throw new NumberFormatException("格式错误");
+        }
+       
+   
         for (; !this.readFinished() && (this.peek() != 0) && !ASCII.isSpace(this.peek());) {
             final char ch = (char)this.temp[this.cursor];
-            if (endCharSet.contains(ch)) {
+            
+            if (ASCII.isDigit(ch)) {
                 break;
             }
             number = (number * 10) + (ch - '0');
@@ -296,7 +312,7 @@ public class StringParser {
             this.next();
         }
 
-        return number;
+        return isNegative ? -1 * number : number;
 
     }
 

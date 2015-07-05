@@ -1,19 +1,31 @@
 package com.wmenjoy.utils.chain;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AndNode extends Node {
 
+	List<Node> nodeList;
+
 	public AndNode(final Node node, final Node next) {
-		// TODO Auto-generated constructor stub
+		this.nodeList = new ArrayList<Node>();
+		this.nodeList.add(node);
+		this.nodeList.add(next);
 	}
 
 	public void appendNode(final Node next) {
-		// TODO Auto-generated method stub
+		this.nodeList.add(next);
 
 	}
 
+	/**
+	 * 可以使用缓冲池同步执行
+	 */
 	@Override
 	protected int handle(final BaseContextParam contextParam) {
-		// TODO Auto-generated method stub
+		
+		
+		
 		return 0;
 	}
 
