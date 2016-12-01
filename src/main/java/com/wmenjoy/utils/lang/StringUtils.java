@@ -4,25 +4,25 @@ import java.util.Collection;
 
 public abstract class StringUtils {
 
-	/**
-	 * 
-	 * @param fieldDesc
-	 * @return
-	 */
-	public static boolean isBlank(final String str) {
-		int strLen;
-		if ((str == null) || ((strLen = str.length()) == 0)) {
-			return true;
-		}
-		for (int i = 0; i < strLen; i++) {
-			if ((Character.isWhitespace(str.charAt(i)) == false)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	  /**
+    /**
+     *
+     * @param fieldDesc
+     * @return
+     */
+    public static boolean isBlank(final String str) {
+        int strLen;
+        if ((str == null) || ((strLen = str.length()) == 0)) {
+            return true;
+        }
+        for (int i = 0; i < strLen; i++) {
+            if ((Character.isWhitespace(str.charAt(i)) == false)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * <p>Checks if a CharSequence is whitespace, empty ("") or null.</p>
      * <p/>
      * <pre>
@@ -49,37 +49,37 @@ public abstract class StringUtils {
         }
         return true;
     }
-    
 
-	/**
-	 * " " false "" false null false;
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static boolean isNotBlank(final String str) {
-		return !isBlank(str);
-	}
 
-	public static String trim(final String value) {
-		return value == null ? null : value.trim();
+    /**
+     * " " false "" false null false;
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isNotBlank(final String str) {
+        return !isBlank(str);
+    }
 
-	}
+    public static String trim(final String value) {
+        return value == null ? null : value.trim();
 
-	public static String trimToNull(final String str) {
-		final String ts = trim(str);
-		return isEmpty(ts) ? null : ts;
+    }
 
-	}
+    public static String trimToNull(final String str) {
+        final String ts = trim(str);
+        return isEmpty(ts) ? null : ts;
 
-	public static String trimToEmpty(final String str) {
-		return str == null ? EMPTY : str.trim();
-	}
+    }
 
-	/**
-	 * 字符串的null常量
-	 * */
-	public static final String EMPTY = "";
+    public static String trimToEmpty(final String str) {
+        return str == null ? EMPTY : str.trim();
+    }
+
+    /**
+     * 字符串的null常量
+     * */
+    public static final String EMPTY = "";
 
     /**
      * Check that the given CharSequence is neither <code>null</code> nor of
@@ -98,7 +98,7 @@ public abstract class StringUtils {
      * @return <code>true</code> if the CharSequence is not null and has length
      * @see #hasText(String)
      */
-    public static boolean hasLength(CharSequence str) {
+    public static boolean hasLength(final CharSequence str) {
         return (str != null && str.length() > 0);
     }
 
@@ -111,11 +111,11 @@ public abstract class StringUtils {
      * @return <code>true</code> if the String is not null and has length
      * @see #hasLength(CharSequence)
      */
-    public static boolean hasLength(String str) {
+    public static boolean hasLength(final String str) {
         return hasLength((CharSequence) str);
     }
-    
-    
+
+
     /**
      * Check whether the given CharSequence has actual text. More specifically,
      * returns <code>true</code> if the string not <code>null</code>, its length
@@ -136,7 +136,7 @@ public abstract class StringUtils {
      * only
      * @see Character#isWhitespace
      */
-    public static boolean hasText(CharSequence str) {
+    public static boolean hasText(final CharSequence str) {
         if (!hasLength(str)) {
             return false;
         }
@@ -159,133 +159,143 @@ public abstract class StringUtils {
      * length is greater than 0, and it does not contain whitespace only
      * @see #hasText(CharSequence)
      */
-    public static boolean hasText(String str) {
+    public static boolean hasText(final String str) {
         return hasText((CharSequence) str);
     }
-    
-	/***
-	 * 
-	 * "" true <br>
-	 * " " false <br>
-	 * null true <br>
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static boolean isEmpty(final String str) {
-		return (str == null) || (str.length() == 0);
-	}
 
-	public static boolean isNotEmpty(final String str) {
-		return !isEmpty(str);
-	}
+    /***
+     *
+     * "" true <br>
+     * " " false <br>
+     * null true <br>
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isEmpty(final String str) {
+        return (str == null) || (str.length() == 0);
+    }
 
-	public static String[] split(final String msg, final String sep) {
+    public static boolean isNotEmpty(final String str) {
+        return !isEmpty(str);
+    }
 
-		if (msg == null) {
-			return (new String[0]);
-		}
-		return msg.split(sep);
+    public static String[] split(final String msg, final String sep) {
 
-	}
+        if (msg == null) {
+            return (new String[0]);
+        }
+        return msg.split(sep);
 
-	public static boolean startsWith(final String line, final String headStr) {
-		if ((line == null) || (headStr == null)
-				|| (line.length() < headStr.length())) {
-			return false;
-		}
+    }
 
-		return line.startsWith(headStr);
-	}
+    public static boolean startsWith(final String line, final String headStr) {
+        if ((line == null) || (headStr == null)
+                || (line.length() < headStr.length())) {
+            return false;
+        }
 
-	public static boolean equals(final String str1, final String str2) {
-		return str1 == null ? str2 == null : str1.equals(str2);
-	}
+        return line.startsWith(headStr);
+    }
 
-	public static boolean equalsIgnoreCase(final String str1, final String str2) {
-		return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
-	}
+    public static boolean equals(final String str1, final String str2) {
+        return str1 == null ? str2 == null : str1.equals(str2);
+    }
 
-	/**
-	 * join string.
-	 * 
-	 * @param array
-	 *            String array.
-	 * @return String.
-	 */
-	public static String join(final String[] array) {
-		if (array.length == 0) {
-			return "";
-		}
-		final StringBuilder sb = new StringBuilder();
-		for (final String s : array) {
-			sb.append(s);
-		}
-		return sb.toString();
-	}
+    public static boolean equalsIgnoreCase(final String str1, final String str2) {
+        return str1 == null ? str2 == null : str1.equalsIgnoreCase(str2);
+    }
 
-	/**
-	 * join string like javascript.
-	 * 
-	 * @param array
-	 *            String array.
-	 * @param split
-	 *            split
-	 * @return String.
-	 */
-	public static String join(final String[] array, final char split) {
-		if (array.length == 0) {
-			return "";
-		}
-		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < array.length; i++) {
-			if (i > 0) {
-				sb.append(split);
-			}
-			sb.append(array[i]);
-		}
-		return sb.toString();
-	}
+    /**
+     * join string.
+     *
+     * @param array
+     *            String array.
+     * @return String.
+     */
+    public static String join(final String[] array) {
+        if (array.length == 0) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (final String s : array) {
+            sb.append(s);
+        }
+        return sb.toString();
+    }
 
-	/**
-	 * join string like javascript.
-	 * 
-	 * @param array
-	 *            String array.
-	 * @param split
-	 *            split
-	 * @return String.
-	 */
-	public static String join(final String[] array, final String split) {
-		if (array.length == 0) {
-			return "";
-		}
-		final StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < array.length; i++) {
-			if (i > 0) {
-				sb.append(split);
-			}
-			sb.append(array[i]);
-		}
-		return sb.toString();
-	}
+    /**
+     * join string like javascript.
+     *
+     * @param array
+     *            String array.
+     * @param split
+     *            split
+     * @return String.
+     */
+    public static String join(final String[] array, final char split) {
+        if (array.length == 0) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(split);
+            }
+            sb.append(array[i]);
+        }
+        return sb.toString();
+    }
 
-	public static String join(final Collection<String> coll, final String split) {
-		if (coll.isEmpty()) {
-			return "";
-		}
+    /**
+     * join string like javascript.
+     *
+     * @param array
+     *            String array.
+     * @param split
+     *            split
+     * @return String.
+     */
+    public static String join(final String[] array, final String split) {
+        if (array.length == 0) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            if (i > 0) {
+                sb.append(split);
+            }
+            sb.append(array[i]);
+        }
+        return sb.toString();
+    }
 
-		final StringBuilder sb = new StringBuilder();
-		boolean isFirst = true;
-		for (final String s : coll) {
-			if (isFirst) {
-				isFirst = false;
-			} else {
-				sb.append(split);
-			}
-			sb.append(s);
-		}
-		return sb.toString();
-	}
+    public static String join(final Collection<String> coll, final String split) {
+        if (coll.isEmpty()) {
+            return "";
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (final String s : coll) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                sb.append(split);
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+    public static boolean containsIgnoreCase(final String url, final String string) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public static boolean contains(final String url, final String string) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 
 }
